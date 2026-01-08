@@ -78,8 +78,25 @@ def iterate_repository_file(base_dir, repo):
         pattern = os.path.join(f'{base_dir}/{repo}', "**", f"*.java")
     else:
         raise NotImplementedError
+
     files = glob.glob(pattern, recursive=True)
-    return files
+
+    # 这些目录里通常不是“仓库源码”，是环境/构建产物/依赖缓存
+    EXCLUDE_DIR_PARTS = {
+        ".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+        ".tox", ".venv", "venv", "env",
+        "site-packages", "dist-packages",
+        "build", "dist", ".eggs"
+    }
+
+    filtered = []
+    for fp in files:
+        parts = set(os.path.normpath(fp).split(os.sep))
+        if parts & EXCLUDE_DIR_PARTS:
+            continue
+        filtered.append(fp)
+
+    return filtered
 
 
 def iterate_repository_json_file(base_dir, repo):
