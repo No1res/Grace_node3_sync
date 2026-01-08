@@ -461,8 +461,8 @@ class LLMModel:
         """
         device = "cuda:3" if torch.cuda.is_available() else "cpu"
 
-        tokenizer = AutoTokenizer.from_pretrained("./pretrain_models", trust_remote_code=True)
-        model = AutoModel.from_pretrained("./pretrain_models", trust_remote_code=True).to(device)
+        tokenizer = AutoTokenizer.from_pretrained("/workspace/models/codet5p-110m-embedding", trust_remote_code=True)
+        model = AutoModel.from_pretrained("/workspace/models/codet5p-110m-embedding", trust_remote_code=True).to(device)
 
         return tokenizer, model
 
