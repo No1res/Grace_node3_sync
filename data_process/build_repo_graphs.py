@@ -97,7 +97,7 @@ def make_progress_cb(rp: RepoProgress):
     return _cb
 
 
-def start_heartbeat(repo_dir: str, rp: RepoProgress, interval_sec: int = 15):
+def start_heartbeat(repo_dir: str, rp: RepoProgress, interval_sec: int = 5):
     """
     Prints a heartbeat so you can see it is still alive even if a step is slow.
     """
