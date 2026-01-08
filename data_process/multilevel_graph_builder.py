@@ -1577,20 +1577,67 @@ def preprocess_repobench_data(data_sample, repo_path, temp_repo_path):
         logging.error(f"Error processing repository: {e}")
 
 
-def process_repo_to_graph(repo_path: str, lang: str = 'python') -> MultiLevelGraph:
+# def process_repo_to_graph(repo_path: str, lang: str = 'python') -> MultiLevelGraph:
+#     if lang == 'python':
+#         builder = MultiLevelGraphBuilder(repo_path)
+#     elif lang == 'java':
+#         builder = MultiLevelJavaGraphBuilder(repo_path)
+#     else:
+#         raise ValueError(f"Unsupported language: {lang}")
+    
+#     builder.build_repo_level()
+#     builder.build_module_level()
+#     builder.build_function_level()
+    
+#     builder.build_combined_graph()
+    
+#     return builder.graphs
+
+import time
+from typing import Optional, Callable
+
+# progress_cb 期望形如：progress_cb(step: str, status="start"/"end", elapsed=..., repo_path=..., lang=...)
+ProgressCB = Optional[Callable[..., None]]
+
+def process_repo_to_graph(repo_path: str, lang: str = 'python', progress_cb: ProgressCB = None) -> MultiLevelGraph:
+    def tick(step: str, status: str, t0: float = None):
+        if progress_cb is None:
+            return
+        payload = {"status": status, "repo_path": repo_path, "lang": lang}
+        if t0 is not None and status == "end":
+            payload["elapsed"] = time.perf_counter() - t0
+        try:
+            progress_cb(step, **payload)
+        except Exception:
+            # 进度回调不应影响主流程
+            pass
+
+    tick("init_builder", "start")
     if lang == 'python':
         builder = MultiLevelGraphBuilder(repo_path)
     elif lang == 'java':
         builder = MultiLevelJavaGraphBuilder(repo_path)
     else:
         raise ValueError(f"Unsupported language: {lang}")
-    
+    tick("init_builder", "end")
+
+    t = time.perf_counter(); tick("build_repo_level", "start")
     builder.build_repo_level()
+    tick("build_repo_level", "end", t)
+
+    t = time.perf_counter(); tick("build_module_level", "start")
     builder.build_module_level()
+    tick("build_module_level", "end", t)
+
+    t = time.perf_counter(); tick("build_function_level", "start")
     builder.build_function_level()
-    
+    tick("build_function_level", "end", t)
+
+    t = time.perf_counter(); tick("build_combined_graph", "start")
     builder.build_combined_graph()
-    
+    tick("build_combined_graph", "end", t)
+
+    tick("done", "end")
     return builder.graphs
 
 def load_jsonl(fname):
