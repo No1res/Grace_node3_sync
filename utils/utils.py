@@ -86,7 +86,11 @@ def iterate_repository_file(base_dir, repo):
         ".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
         ".tox", ".venv", "venv", "env",
         "site-packages", "dist-packages",
-        "build", "dist", ".eggs"
+        "build", "dist", ".eggs",
+        ".idea", ".vscode",
+        "node_modules",
+        ".gitea", ".github",
+        
     }
 
     filtered = []
